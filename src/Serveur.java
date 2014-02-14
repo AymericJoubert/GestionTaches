@@ -86,6 +86,6 @@ public class Serveur{
 	public static void creerTache(PrintWriter out, BufferedReader in, File fich, FileWriter fichW){
 		out.println("Entrez le nom, le statut et l'affectation de la tache séparés par un espace : ");
 		out.flush();
-		
+		//TODO Gérer le CSV en tant que base de donnée, insérer tâche et les lister
 	}
 }
