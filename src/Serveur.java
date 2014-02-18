@@ -7,85 +7,133 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
+import java.util.Set;
 
 public class Serveur{
-	public static void main(String [] args){
-		ServerSocket socketserver;
-		Socket socketduserveur;
-		BufferedReader in;
-		PrintWriter out;
-		Scanner s;
-		String choix;
-		File fich;
-		FileWriter fichW;
-		FileReader fichR;
-		
-		try {
+
+	private ServerSocket socketserver;
+	private Socket socketduserveur;
+	private BufferedReader in;
+	private PrintWriter out;
+	private Scanner s;
+	private String choix;
+	private File fich;
+	private FileWriter fichW;
+	private FileReader fichR;
+	public static int nbTaches = 0;
+	public static HashMap<Integer, Tache> taches;
+	public static ArrayList<String> logins;
+
+	public Serveur(){
+
+		try {			
+			// HashMap contenant les taches
+			taches = new HashMap();
+			nbTaches = 0;
+
 			// Socket de connection
 			socketserver = new ServerSocket(8080);
 			socketduserveur = socketserver.accept(); 
-			
+
 			// Pour lire et écrire
 			out = new PrintWriter(socketduserveur.getOutputStream());
 			in  = new BufferedReader (new InputStreamReader (socketduserveur.getInputStream()));
-			
-			fich  = new File("bdd.csv");
-			fichW = new FileWriter(fich);
-			fichR = new FileReader(fich);
-			
-			sendMenu(out);
-			
-			choix = in.readLine();
-			while(choix!=null && !choix.equals("0")){
-				switch (Integer.parseInt(choix)){
-					case 1 :
-						out.println("Coucou tu as choisi le 1.");
-						creerTache(out, in, fich, fichW);
-						out.flush();
-						break;
-					case 2 :
-						out.println("Coucou tu as choisi le 2.");
-						out.flush();
-						break;
-					default :
-						out.println("Ce choix n'est pas autorisé.");
-				}
+
+			while(true){
 				choix = in.readLine();
+				String [] choixx = choix.split(" ");
+				if(choixx[0].equals("create"))
+					creerTache(out, choixx);
+				else if(choixx[0].equals("list"))
+					listerTaches(out, choixx);
+				else if(choixx[0].equals("delete"))
+					deleteTache(out,choixx);
+					
 			}
-			socketduserveur.close();
-			socketserver.close();
+
+			// Fermeture des sockets
+			//socketduserveur.close();
+			//socketserver.close();
 
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		}
+
 	}
 
-	public static void sendMenu(PrintWriter out){
-		out.println("        Menu :");
-		out.println("        ------");
-		out.println("1 : Créer une tâche.");
-		out.println("2 : Voir la liste des tâches");
-		out.println("3 : Affecter une tâche.");
-		out.println("4 : Changer le statut d'une tâche.");
-		out.println("5 : Supprimer une tache.");
-		out.println("0 : Quitter.");
-		out.println("endendend");
+	public void creerTache(PrintWriter out, String [] tache){
+		Tache t = new Tache(tache[1], tache[2]);
+		taches.put(nbTaches++, t);
+		out.println("OK");
 		out.flush();
 	}
+
+	// Fonction qui gere l'affichage de la liste des taches
+	public void listerTaches(PrintWriter out, String [] choix) throws IOException{
+		String ret = "";
+		Set cles = taches.keySet();
+		Iterator it = cles.iterator();
+		if(choix[1].equals("all")){
+			while (it.hasNext()){
+				Object cle = it.next();
+				Tache t = taches.get(cle);
+				ret+= "Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+			}
+		}
+		else if(choix[1].equals("status")){
+			while (it.hasNext()){
+				Object cle = it.next();
+				Tache t = taches.get(cle);
+				if(t.getStatus().equals("libre"))
+					ret+= "Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+			}
+			cles = taches.keySet();
+			it = cles.iterator();
+			while (it.hasNext()){
+				Object cle = it.next();
+				Tache t = taches.get(cle);
+				if(t.getStatus().equals("affectée"))
+					ret+= "Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+			}
+			cles = taches.keySet();
+			it = cles.iterator();
+			while (it.hasNext()){
+				Object cle = it.next();
+				Tache t = taches.get(cle);
+				if(t.getStatus().equals("realisée"))
+					ret+= "Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+			}
+		}
+		else if(choix[1].equals("affect")){
+			for(String s : logins){
+				cles = taches.keySet();
+				it = cles.iterator();
+				while (it.hasNext()){
+					Object cle = it.next();
+					Tache t = taches.get(cle);
+					if(t.getAffectation().equals(s))
+						ret+= "Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+				}
+
+			}
+		}
+		out.println(ret);
+		out.println("OK");
+		out.flush();
+	}	
 	
-	public static void sendMenuTaches(PrintWriter out){
-		out.println("1 : Voir toutes les tâches.");
-		out.println("2 : Voir la liste par statut.");
-		out.println("3 : Voir par affectation.");
-		out.println("endendend");
+	public void deleteTache(PrintWriter out, String [] choix){
+		if(taches.containsKey(Integer.parseInt(choix[1]))){
+			taches.remove(Integer.parseInt(choix[1]));
+			out.println("OK");
+		}else
+			out.println("KO");
 		out.flush();
 	}
-	
-	public static void creerTache(PrintWriter out, BufferedReader in, File fich, FileWriter fichW){
-		out.println("Entrez le nom, le statut et l'affectation de la tache séparés par un espace : ");
-		out.flush();
-		//TODO Gérer le CSV en tant que base de donnée, insérer tâche et les lister
-	}
+
 }
