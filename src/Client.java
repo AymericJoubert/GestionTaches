@@ -8,16 +8,16 @@ import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Client {
-	
+
 	Socket socket;
 	BufferedReader in;
 	PrintWriter out;
 	String line, choix;
 	Scanner s;
-	
+
 	public Client() {
 		try {
-			// Socket de connection au port 800
+			// Socket de connection au port 8080
 			socket = new Socket("localhost",8080);
 
 			// Input, output et scanner
@@ -25,57 +25,35 @@ public class Client {
 			in = new BufferedReader (new InputStreamReader (socket.getInputStream()));
 			s = new Scanner(System.in);
 
+			// Connection au serveur
+			System.out.println("Entrez votre login :");
+			out.println(s.nextLine());
+			out.flush();
+
+			// Attente d'une reponse favorable a la connection
+			while(!in.readLine().contains("OK"))
+				out.println(s.nextLine());
+			System.out.println("Vous êtes connecté.");
+
+
 			while(true){
+				System.out.println("Quel choix ?");
 				// Lecture de la requete
 				choix = s.nextLine();
-				
+
 				// Envoi de la requete au serveur
 				out.println(choix);
 				out.flush();
-				
-				// Reception de la reponse du serveur
-				do
-				{
-					line = in.readLine();
-					System.out.println(line);
-				}
-				while((! line.contains("OK")) || (! line.contains("KO")) );
-				
-				
-			}
-			// Attente de l'envoi du menu par le serveur
-			/*line=in.readLine();
-			while(line != null){
-				if(line.contains("endendend"))
-					line=null;
-				else{
-					System.out.println(line);
-					line=in.readLine();	
-				}
-			}
-			
-			// Debut du traitement
-			choix = s.nextLine();
-			while(! choix.equals("0")){
-				// Envoi du choix au serveur
-				out.println(choix);
-				out.flush();
-				
-				// Reponse du serveur
-				line=in.readLine();
-				//Traitement de la réponse
-				if(line.contains("endFunction")){
-					line = in.readLine();
-					while(! line.contains("endendend")){
-						System.out.println(line);
-						line=in.readLine();
-					}
-				}else
-					System.out.println(line);
-				choix = s.nextLine();
-			}*/
 
-			//socket.close();
+				// Reception et affichage de la reponse du serveur
+				line = in.readLine();
+				while(!(line.contains("OK")) && !(line.contains("KO")) ){					
+					System.out.println(line);
+					line = in.readLine();
+				}
+				System.out.println(line);
+
+			}
 
 		}catch (Exception e) {
 			e.printStackTrace();

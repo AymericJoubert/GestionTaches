@@ -4,14 +4,32 @@ public class Tache {
 	private String auteur;
 	private String status;
 	private String affectation;
+	private int num;
 	
-	public Tache(String description, String auteur){
+	public Tache(String description, String auteur, int num){
 		this.description = description;
 		this.auteur = auteur;
 		this.status = "libre";
 		this.affectation = null;
+		this.num = num;
 	}
 
+	public int getNum() {
+		return num;
+	}
+
+	public void setNum(int num) {
+		this.num = num;
+	}
+
+	public Tache(String description, String auteur, String status, String affectation, int num){
+		this.description = description;
+		this.auteur = auteur;
+		this.status = status;
+		this.affectation = affectation;
+		this.num = num;
+	}
+	
 	public String getDescription() {
 		return description;
 	}

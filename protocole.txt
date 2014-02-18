@@ -1,0 +1,11 @@
+create description auteur [statut] [affectation]
+
+list <all|status|affect>
+
+affect <id> <login>
+
+change <id> <libre|affectée|réalisée>
+
+delete <id>
+
+
