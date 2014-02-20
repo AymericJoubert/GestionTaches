@@ -10,7 +10,7 @@ public class Tache {
 		this.description = description;
 		this.auteur = auteur;
 		this.status = "libre";
-		this.affectation = null;
+		this.affectation = "Non Affectee";
 		this.num = num;
 	}
 

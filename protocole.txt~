@@ -5,9 +5,6 @@ jouberta, test
 create description auteur [statut] [affectation]
 
 list <all|status|affect> [status|affect]
-	list all
-	list status type_status
-	list affect uid
 
 affect <id> <login>
 

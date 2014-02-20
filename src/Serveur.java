@@ -1,7 +1,4 @@
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -26,15 +23,16 @@ public class Serveur{
 	public static ArrayList<String> logins;
 
 	public Serveur(){
-		//TODO Commenter le code 
 		try {
-			
+
 			// HashMap contenant les taches
 			taches = new HashMap();
 			nbTaches = 0;
 			logins = new ArrayList();
 
+			// Logins acceptés pour la connections
 			logins.add("jouberta");
+			logins.add("test");
 
 			// Socket de connection
 			socketserver = new ServerSocket(8080);
@@ -44,15 +42,18 @@ public class Serveur{
 			out = new PrintWriter(socketduserveur.getOutputStream());
 			in  = new BufferedReader (new InputStreamReader (socketduserveur.getInputStream()));
 
-			while(!logins.contains(in.readLine())){
+			// Connection de l'utilisateur
+			String log = in.readLine();
+			while(!(logins.contains(log))){
 				out.println("KO");
 				out.flush();
+				log = in.readLine();
 			}
-			
+
 			// Login connu, utilisateur accepté
-			out.println("OK");
+			out.println("Connection reussie.");
 			out.flush();
-			
+
 			while(true){
 				choix = in.readLine();
 				String [] choixx = choix.split(" ");
@@ -66,7 +67,14 @@ public class Serveur{
 					affectTache( out, choixx);
 				else if(choixx[0].equals("change"))
 					changeTache( out, choixx);
-					
+				else if(choixx[0].equals("exit"))
+					socketduserveur.close();
+				else{
+					out.println("KO");
+					out.flush();
+				}
+
+
 			}
 
 			// Fermeture des sockets
@@ -97,58 +105,48 @@ public class Serveur{
 	}
 
 	// Fonction qui gere l'affichage de la liste des taches
-	public void listerTaches(PrintWriter out, String [] choix) throws IOException{
-		String ret = "";
-		Set cles = taches.keySet();
-		Iterator it = cles.iterator();
-		if(choix[1].equals("all")){
-			while (it.hasNext()){
-				Object cle = it.next();
-				Tache t = taches.get(cle);
-				ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
-			}
-		}
-		else if(choix[1].equals("status")){
-			while (it.hasNext()){
-				Object cle = it.next();
-				Tache t = taches.get(cle);
-				if(t.getStatus().equals("libre"))
-					ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
-			}
-			it = cles.iterator();
-			while (it.hasNext()){
-				Object cle = it.next();
-				Tache t = taches.get(cle);
-				if(t.getStatus().equals("affectée"))
-					ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
-			}
-			it = cles.iterator();
-			while (it.hasNext()){
-				Object cle = it.next();
-				Tache t = taches.get(cle);
-				if(t.getStatus().equals("realisée"))
-					ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
-			}
-		}
-		else if(choix[1].equals("affect")){
-			for(String s : logins){
-				Set clees = taches.keySet();
-				Iterator itt = clees.iterator();
-				while (itt.hasNext()){
+	public void listerTaches(PrintWriter out, String [] choix){
+		try{
+			String ret = "";
+			Set cles = taches.keySet();
+			Iterator it = cles.iterator();
+			if(choix[1].equals("all")){
+				while (it.hasNext()){
 					Object cle = it.next();
 					Tache t = taches.get(cle);
-					if(t.getAffectation().equals(s))
+					ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+				}
+			}
+			else if(choix[1].equals("status")){
+				while (it.hasNext()){
+					Object cle = it.next();
+					Tache t = taches.get(cle);
+					if(t.getStatus().equals(choix[2]))
 						ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
 				}
-
 			}
+			else if(choix[1].equals("affect")){
+				while (it.hasNext()){
+					Object cle = it.next();
+					Tache t = taches.get(cle);
+					if(t.getAffectation().equals(choix[2]))
+						ret+="Num: "+t.getNum()+" Description: "+t.getDescription()+", Auteur : "+t.getAuteur()+", Affectation : "+t.getStatus()+"\n";
+				}
+			}
+			out.println(ret);
+			out.flush();
+			out.println("OK");
+			out.flush();
 		}
-		out.println(ret);
-		out.flush();
-		out.println("OK");
-		out.flush();
+		catch(Exception e){
+			out.println(e.getMessage()+"\n");
+			out.println(e.toString());
+			out.println(e.getStackTrace());
+			out.println("KO");
+			out.flush();
+		}
 	}	
-	
+
 	// Suppression d'une tache
 	public void deleteTache(PrintWriter out, String [] choix){
 		if(taches.containsKey(Integer.parseInt(choix[1]))){
@@ -158,7 +156,7 @@ public class Serveur{
 			out.println("KO");
 		out.flush();
 	}
-	
+
 	// Affectation d'une tache a une personne
 	public void affectTache(PrintWriter out, String [] choix){
 		try{

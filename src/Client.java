@@ -1,10 +1,7 @@
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.Scanner;
 
 public class Client {
@@ -31,8 +28,13 @@ public class Client {
 			out.flush();
 
 			// Attente d'une reponse favorable a la connection
-			while(!in.readLine().contains("OK"))
+			String connec = in.readLine();
+			while(!(connec.contains("Connection reussie"))){
+				System.out.println("Login incorrect :");
 				out.println(s.nextLine());
+				out.flush();
+				connec = in.readLine();
+			}
 			System.out.println("Vous êtes connecté.");
 
 
